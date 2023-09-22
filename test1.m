@@ -1,0 +1,109 @@
+clear;
+clc;
+
+% 已知的零点和极点
+zeros = [-0.8,0.8];  % 替换为实际的零点值
+poles = [0.5+0.5*1j,0.5-0.5*1j];  % 替换为实际的极点值
+
+% 构建分子和分母多项式
+B = poly(zeros);
+A = poly(poles);
+
+% 构建系统函数H(z)
+sys= tf(B, A, 1, 'Variable', 'z');
+
+
+% 使用zplane函数绘制零极点图
+figure;
+subplot(231);
+zplane(B,A);
+title('Z-Transform Zero-Pole Plot');
+
+
+% 创建网格
+L=1.5;
+W=L;
+step=0.01
+[x, y] = meshgrid(-1*L:step:L, -1*W:step:W);
+z=x+1j*y;
+%H = (z - 1)./(z.^2 - 2 *z + 0.9975);
+[N,M]=size(z);
+
+
+
+%计算并画出系统响应的幅度曲面
+for n=1:N
+    for m=1:M
+        H(n,m)=evalfr(sys, z(n,m));
+    end
+end
+subplot(232);
+mesh(x,y,abs(H));
+title('H（Z）的幅度曲面');
+
+
+
+%DTFT,在单位圆上取值
+t=-10*pi:0.01:10*pi;
+x=cos(t);y=sin(t);
+z=x+1j*y;
+for n=1:length(z)
+        H_DTFT(n)=evalfr(sys, z(n));
+end
+
+
+subplot(233);
+plot3(x,y,abs(H_DTFT));
+title('H（Z）的在单位圆上的幅度曲线');
+
+
+subplot(234);
+plot(t,abs(H_DTFT))
+% 自定义X轴刻度和标签
+xticks(-10*pi:pi:10*pi);  % 设置刻度位置
+xticklabels({'-10\pi','-9\pi', '-8\pi', '-7\pi', '-6\pi',  '-5\pi', '-4\pi','-3\pi','-2\pi','-1\pi','0',...
+    '1\pi','2\pi','3\pi','4\pi','5\pi',  '6\pi','7\pi','8\pi','9\pi','10\pi'});  % 设置标签
+% 设置X轴的刻度范围
+xlim([-10*pi, 10*pi]);
+title('将幅度曲线连续展开/DTFT');
+
+
+
+t= linspace(-pi,pi,2048);
+x=cos(t);y=1j*sin(t);
+z=x+y;
+for n=1:length(z)
+        H_DTFT_2(n)=evalfr(sys, z(n));
+end
+subplot(235);
+plot(t,abs(H_DTFT_2))
+% 自定义X轴刻度和标签
+xticks(-pi:pi:pi);  % 设置刻度位置
+xticklabels({'-1\pi','0', '1\pi'});  % 设置标签
+% 设置X轴的刻度范围
+xlim([-2*pi, 2*pi]);
+title('截取一个周期的DTFT');
+
+
+
+
+
+
+t= linspace(-pi,pi,32);
+
+x=cos(t);y=1j*sin(t);
+z=x+y;
+for n=1:length(z)
+        H_DFT(n)=evalfr(sys, z(n));
+end
+
+subplot(236);
+stem(t,abs(H_DFT))
+% 自定义X轴刻度和标签
+xticks(-pi:pi:pi);  % 设置刻度位置
+xticklabels({'-1\pi','0', '1\pi'});  % 设置标签
+% 设置X轴的刻度范围
+xlim([-2*pi, 2*pi]);
+title('DFT');
+
+
